@@ -73,7 +73,16 @@ export async function DELETE(req: Request) {
   }
 
   try {
-    const { chatId } = await req.json();
+    const { chatId, purgeAll } = await req.json();
+
+    if (purgeAll) {
+      const result = await db
+        .delete(chats)
+        .where(eq(chats.userId, session.user.id))
+        .returning();
+      return NextResponse.json({ success: true, count: result.length });
+    }
+
     if (!chatId) {
       return NextResponse.json({ error: "Missing chatId" }, { status: 400 });
     }

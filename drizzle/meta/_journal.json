@@ -8,6 +8,13 @@
       "when": 1782754700476,
       "tag": "0000_long_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782891316735,
+      "tag": "0001_fresh_human_torch",
+      "breakpoints": true
     }
   ]
 }

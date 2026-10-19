@@ -11,8 +11,10 @@ import { getTools } from "@/lib/composio";
 import { saveMemory, retrieveMemory } from "@/lib/memory";
 import { buildPrompt } from "@/lib/promptBuilder";
 import { db } from "@/lib/db";
-import { messages as dbMessages } from "@/lib/db/schema";
+import { messages as dbMessages, userPreferences } from "@/lib/db/schema";
 import type { Attachment } from "@/types/attachment";
+import { auth } from "@/auth";
+import { eq } from "drizzle-orm";
 
 export const maxDuration = 30;
 
@@ -113,6 +115,46 @@ export async function POST(req: Request) {
 
   const tools = await getTools("User_Vishu");
 
+  // Fetch user preferences for prompt personalization
+  const session = await auth();
+  let explanationLevel: string | undefined = undefined;
+  let preferredLanguage: string | undefined = undefined;
+
+  if (session?.user?.id) {
+    try {
+      const prefs = await db.query.userPreferences.findFirst({
+        where: eq(userPreferences.userId, session.user.id),
+      });
+      if (prefs) {
+        explanationLevel = prefs.explanationLevel;
+        preferredLanguage = prefs.preferredLanguage;
+      }
+    } catch (e) {
+      console.error("Failed to fetch preferences in chat API:", e);
+    }
+  }
+
+  // Fetch user memory from database for prompting context
+  let databaseMemoryPrompt = "";
+  if (session?.user?.id && mode === "teacher") {
+    try {
+      const { getSupermemoryProfile } = await import("@/lib/memory");
+      const profile = await getSupermemoryProfile(session.user.id);
+      databaseMemoryPrompt = `
+ACTIVE STUDENT PROFILE (Supermemory):
+- Learning Goal: ${profile.learningGoal}
+- Current Level: ${profile.level} (XP: ${profile.score})
+- Streaks: ${profile.currentStreak} Days (Longest: ${profile.longestStreak} Days)
+- Mastery Levels: ${profile.masteries.map((m) => `${m.topic}: ${m.mastery}%`).join(", ") || "None recorded yet"}
+- Weak Concepts to focus on: ${profile.weakConcepts.join(", ") || "None recorded yet"}
+- Strong Concepts mastered: ${profile.strongConcepts.join(", ") || "None recorded yet"}
+- Last Quiz Attempted: ${profile.lastQuizTopic || "None"} (Accuracy: ${profile.lastQuizAccuracy || 0}% | Difficulty: ${profile.lastQuizDifficulty || "N/A"})
+`;
+    } catch (e) {
+      console.error("Failed to inject database supermemory:", e);
+    }
+  }
+
   // Injects code files info directly inside system prompt template
   const systemPrompt = buildPrompt({
     mode,
@@ -120,7 +162,9 @@ export async function POST(req: Request) {
     attachment: attachedTextFilesInfo
       ? { name: "multiple-files", mimeType: "text/plain", size: 0, content: attachedTextFilesInfo }
       : undefined,
-    basePrompt: SYSTEM_PROMPTS[mode],
+    basePrompt: SYSTEM_PROMPTS[mode] + (databaseMemoryPrompt ? `\n\n${databaseMemoryPrompt}` : ""),
+    explanationLevel,
+    preferredLanguage,
   });
 
   const modelMessages = await convertToModelMessages(normalizedMessages);

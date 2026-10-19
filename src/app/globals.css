@@ -8,6 +8,34 @@
   --card-bg: rgba(24, 24, 27, 0.65);
   --card-border: rgba(63, 63, 70, 0.4);
   --glow-color: rgba(99, 102, 241, 0.15);
+  
+  --btn-bg: #18181b;
+  --btn-border: #27272a;
+  --btn-text: #a1a1aa;
+  --btn-hover-bg: #27272a;
+  --btn-hover-text: #f4f4f5;
+  
+  --sidebar-item-active: rgba(39, 39, 42, 0.6);
+  --sidebar-item-hover: rgba(39, 39, 42, 0.3);
+  --text-muted: #71717a;
+}
+
+.light {
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(228, 228, 231, 0.8);
+  --glow-color: rgba(99, 102, 241, 0.05);
+  
+  --btn-bg: #ffffff;
+  --btn-border: #e4e4e7;
+  --btn-text: #52525b;
+  --btn-hover-bg: #f4f4f5;
+  --btn-hover-text: #09090b;
+  
+  --sidebar-item-active: rgba(228, 228, 231, 0.6);
+  --sidebar-item-hover: rgba(228, 228, 231, 0.3);
+  --text-muted: #71717a;
 }
 
 @theme {
@@ -114,4 +142,35 @@ body {
 }
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
+}
+
+/* Audio wave visualizer keyframes */
+@keyframes audioBar1 {
+  0%, 100% { height: 6px; }
+  50% { height: 15px; }
+}
+@keyframes audioBar2 {
+  0%, 100% { height: 14px; }
+  50% { height: 5px; }
+}
+@keyframes audioBar3 {
+  0%, 100% { height: 9px; }
+  50% { height: 17px; }
+}
+@keyframes audioBar4 {
+  0%, 100% { height: 5px; }
+  50% { height: 11px; }
+}
+
+.animate-audio-bar-1 {
+  animation: audioBar1 0.8s ease-in-out infinite;
+}
+.animate-audio-bar-2 {
+  animation: audioBar2 0.75s ease-in-out infinite;
+}
+.animate-audio-bar-3 {
+  animation: audioBar3 0.9s ease-in-out infinite;
+}
+.animate-audio-bar-4 {
+  animation: audioBar4 0.65s ease-in-out infinite;
 }

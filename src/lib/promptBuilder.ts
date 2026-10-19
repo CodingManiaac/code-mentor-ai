@@ -6,6 +6,8 @@ interface BuildPromptParams {
   memory: string;
   attachment?: Attachment;
   basePrompt: string;
+  explanationLevel?: string;
+  preferredLanguage?: string;
 }
 
 export function buildPrompt({
@@ -13,12 +15,32 @@ export function buildPrompt({
   memory,
   attachment,
   basePrompt,
+  explanationLevel,
+  preferredLanguage,
 }: BuildPromptParams) {
   let prompt = `
 You are CodeMentor AI.
 
 ${basePrompt}
 
+`;
+
+  // Inject personalization preferences
+  if (explanationLevel) {
+    if (explanationLevel === "novice") {
+      prompt += `AI Tutor Persona Tuning: The user is a beginner. Explain concepts using extremely simple metaphors, analogical real-world stories (like using lego blocks, baking recipes, or traffic signals), and avoid complex jargon unless you explain it first.\n`;
+    } else if (explanationLevel === "expert") {
+      prompt += `AI Tutor Persona Tuning: The user has advanced knowledge. Explain concepts with high-level professional terminology, focus on code architecture design patterns, edge cases, and space/time complexity analysis.\n`;
+    } else {
+      prompt += `AI Tutor Persona Tuning: Provide standard conceptual explanations suitable for intermediate learners with details on syntax, execution mechanics, and best practices.\n`;
+    }
+  }
+
+  if (preferredLanguage) {
+    prompt += `Default Coding Language: The user's preferred programming language is ${preferredLanguage.toUpperCase()}. When writing code examples, introducing concepts, or solving algorithms, default to using ${preferredLanguage.toUpperCase()} examples unless the user's uploaded code or prompt specifically requests another language.\n`;
+  }
+
+  prompt += `
 Known User Context:
 
 ${memory}
